@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crate Digger</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Crate Digger</h1>
+    <div class="search-bar">
+        <label for="resellerName">Record Store:</label>
+        <input list="storeSuggestions" type="text" id="resellerName" name="resellerName">
+        <datalist id="storeSuggestions">
+            <!-- Options will be dynamically populated -->
+        </datalist>
+        <button id="loadButton">Load</button>
+    </div>
+    
+    <!-- Progress bar if needed -->
+    <div class="controls">
+        <button id="prevRecordButton">Prev Record</button>
+        <button id="nextRecordButton">Next Record</button>
+        <button id="nextTrackButton">Next Track</button>
+    </div>
+
+    <div id="listingInfo"></div>
+
+    <div id="player"></div> <!-- The YouTube player will be placed here -->
+
+    <script src="https://www.youtube.com/iframe_api"></script> <!-- YouTube API script -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
