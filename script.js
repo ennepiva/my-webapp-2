@@ -3,10 +3,12 @@ import { nextRecord, prevRecord, nextTrack } from './nextRecord.js';
 import { setPlayerInstance } from './videoSelector.js';
 import { searchSuggestions } from './config.js';
 
-let player;
+let player = null;
 
 function populateSearchSuggestions() {
     const datalist = document.getElementById('storeSuggestions');
+    datalist.innerHTML = ""; // Clear existing options
+
     searchSuggestions.forEach(suggestion => {
         const option = document.createElement('option');
         option.value = suggestion;
@@ -15,20 +17,34 @@ function populateSearchSuggestions() {
 }
 
 function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-        height: '360',
-        width: '640',
-        events: {
-            'onReady': onPlayerReady
-        }
-    });
-
-    setPlayerInstance(player);
+    console.log("YouTube API is ready, but player will only be created when needed.");
 }
 
-function onPlayerReady(event) {
-    console.log('YouTube Player is ready');
-    event.target.playVideo();
+function createYouTubePlayer(videoId, callback) {
+    if (!player) {
+        player = new YT.Player('player', {
+            height: '360',
+            width: '640',
+            videoId: videoId || "", // Empty initially
+            playerVars: { 'playsinline': 1 },
+            events: {
+                'onReady': (event) => {
+                    console.log('YouTube Player is ready');
+                    if (videoId) {
+                        event.target.loadVideoById(videoId); // Ensure first video plays
+                    }
+                    if (callback) {
+                        callback(player);
+                    }
+                },
+                'onError': (event) => console.error('YouTube Player error:', event)
+            }
+        });
+
+        setPlayerInstance(player);
+    } else if (videoId) {
+        player.loadVideoById(videoId);
+    }
 }
 
 function loadYouTubeAPI() {
@@ -71,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         nextTrack();
     });
 
-    loadYouTubeAPI().then(() => {
-        onYouTubeIframeAPIReady();
-    });
+    loadYouTubeAPI();
 });
+
+export { createYouTubePlayer };
