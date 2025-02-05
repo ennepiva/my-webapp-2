@@ -77,6 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
     nextTrackButton.addEventListener('click', () => {
         nextTrack();
     });
+    resellerNameInput.addEventListener('mousedown', () => {
+        if (searchSuggestions.includes(resellerNameInput.value)) {
+            let current = resellerNameInput.value;
+            resellerNameInput.value = "";
+            setTimeout(() => {
+                resellerNameInput.value = current;
+            }, 0);
+        }
+    });
     loadYouTubeAPI();
 });
 

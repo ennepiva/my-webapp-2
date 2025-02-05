@@ -1,6 +1,5 @@
 import { discogsApiHeaders } from './apiConfig.js';
 
-// Global variables
 export let currentStoreName = '';
 export let listingsListenedTo = [];
 export let pagesScanned = [];
@@ -20,17 +19,14 @@ export function loadStore(resellerName) {
         return;
     }
 
-    // Reset progress bar on new load
     const progressBar = document.getElementById('progressBar');
-    progressBar.style.width = "0%"; 
-
-    // Start bar animation immediately
+    progressBar.style.width = "0%";
+    const randomSplit = Math.floor(Math.random() * (55 - 25 + 1)) + 25;
     setTimeout(() => {
         progressBar.style.transition = "width 1s linear";
-        progressBar.style.width = "50%"; // Fill halfway while waiting for API response
+        progressBar.style.width = `${randomSplit}%`;
     }, 10);
 
-    // Reset global variables
     currentStoreName = resellerName;
     listingsListenedTo = [];
     pagesScanned = ['1'];
@@ -70,7 +66,7 @@ export function loadStore(resellerName) {
                 });
 
                 loadedListings++;
-                progressBar.style.width = `${50 + (loadedListings / totalListings) * 50}%`;
+                progressBar.style.width = `${randomSplit + (loadedListings / totalListings) * (100 - randomSplit)}%`;
             }, index * 10);
         });
 
