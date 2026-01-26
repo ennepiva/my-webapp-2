@@ -3,5 +3,6 @@ export const searchSuggestions = [
     "OneEyeWitness",
     "sonoventurarecords",
     "Hauz_of_Wax",
-    "Yoyaku"
+    "Yoyaku",
+    "thevinylcurtain"
 ];
