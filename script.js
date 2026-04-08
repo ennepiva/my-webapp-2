@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             genre:   document.getElementById('sGenre').value.trim(),
             style:   document.getElementById('sStyle').value.trim(),
             year:    document.getElementById('sYear').value.trim(),
+            decade:  document.getElementById('sDecade').value.trim(),
             country: document.getElementById('sCountry').value.trim(),
         };
         // Require at least one field
@@ -113,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Allow pressing Enter in any search field to fire the search
-    ['sq', 'sGenre', 'sStyle', 'sYear', 'sCountry'].forEach(id => {
+    ['sq', 'sGenre', 'sStyle', 'sYear', 'sDecade', 'sCountry'].forEach(id => {
         document.getElementById(id).addEventListener('keydown', e => {
             if (e.key === 'Enter') searchButton.click();
         });
@@ -123,6 +124,34 @@ document.addEventListener('DOMContentLoaded', () => {
     nextRecordButton.addEventListener('click', () => nextRecord());
     prevRecordButton.addEventListener('click', () => prevRecord());
     nextTrackButton.addEventListener('click',  () => nextTrack());
+
+
+    // ── Pitch control ────────────────────────────────────────────────────────
+    const pitchSlider = document.getElementById('pitchSlider');
+    const pitchValue  = document.getElementById('pitchValue');
+    const pitchReset  = document.getElementById('pitchReset');
+
+    function applyPitch(val) {
+        const pct   = parseFloat(val);
+        const rate  = 1 + pct / 100;
+        pitchValue.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+        pitchValue.style.color = pct === 0 ? '#fff' : (pct > 0 ? '#aaffaa' : '#ffaaaa');
+        if (player && player.setPlaybackRate) {
+            // YouTube only accepts specific rates — pick nearest available
+            const allowed = player.getAvailablePlaybackRates
+                ? player.getAvailablePlaybackRates()
+                : [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+            const nearest = allowed.reduce((a, b) => Math.abs(b - rate) < Math.abs(a - rate) ? b : a);
+            player.setPlaybackRate(nearest);
+        }
+    }
+
+    pitchSlider.addEventListener('input', () => applyPitch(pitchSlider.value));
+
+    pitchReset.addEventListener('click', () => {
+        pitchSlider.value = 0;
+        applyPitch(0);
+    });
 
     loadYouTubeAPI();
 });
