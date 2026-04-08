@@ -12,10 +12,6 @@ export function setPlayerInstance(playerInstance) {
     player = playerInstance;
 }
 
-export function getPlayerInstance() {
-    return player;
-}
-
 export function playTrack(listing, trackIndex) {
     if (!listing || !listing.release_videos || listing.release_videos.length === 0) {
         console.error('No videos available for this listing');
@@ -41,8 +37,6 @@ export function playTrack(listing, trackIndex) {
         }, handleVideoError, handleStateChange);
     } else {
         player.loadVideoById(videoId);
-        // Re-apply pitch slider rate after loading new video
-        if (window.__applyCurrentPitch) window.__applyCurrentPitch();
     }
 }
 

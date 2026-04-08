@@ -74,20 +74,6 @@
                 <input type="text" id="sYear" placeholder="1994">
             </div>
             <div class="search-field">
-                <label for="sDecade">Decade</label>
-                <input list="decadeSuggestions" type="text" id="sDecade" placeholder="1990">
-                <datalist id="decadeSuggestions">
-                    <option value="1950">
-                    <option value="1960">
-                    <option value="1970">
-                    <option value="1980">
-                    <option value="1990">
-                    <option value="2000">
-                    <option value="2010">
-                    <option value="2020">
-                </datalist>
-            </div>
-            <div class="search-field">
                 <label for="sCountry">Country</label>
                 <input type="text" id="sCountry" placeholder="UK, Germany…">
             </div>
@@ -106,25 +92,7 @@
     </div>
 
     <div id="listingInfo"></div>
-
-    <div class="player-row">
-        <div id="player"></div>
-
-        <!-- Stepped pitch fader -->
-        <div class="pitch-control">
-            <span class="pitch-label">PITCH</span>
-            <span class="pitch-value" id="pitchValue">1.0×</span>
-            <!-- Step labels — rendered by JS -->
-            <div class="pitch-fader-wrap" id="pitchFaderWrap">
-                <div class="pitch-groove"></div>
-                <div class="pitch-ticks" id="pitchTicks"></div>
-                <input type="range" id="pitchSlider"
-                       min="0" max="4" step="1" value="2"
-                       orient="vertical">
-            </div>
-            <button class="pitch-reset" id="pitchReset">RESET</button>
-        </div>
-    </div>
+    <div id="player"></div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script type="module" src="script.js"></script>
