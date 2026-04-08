@@ -1,3 +1,5 @@
+// loadStore.js
+
 import { discogsApiHeaders } from './apiConfig.js';
 
 export let currentStoreName = '';
@@ -5,6 +7,13 @@ export let listingsListenedTo = [];
 export let pagesScanned = [];
 export let listingDetails = [];
 export let totalPages = 1;
+
+// ── setters (used by loadSearch.js to reset shared state) ────────────────────
+export function setCurrentStoreName(v)    { currentStoreName    = v; }
+export function setListingsListenedTo(v)  { listingsListenedTo  = v; }
+export function setPagesScanned(v)        { pagesScanned        = v; }
+export function setListingDetails(v)      { listingDetails      = v; }
+export function setTotalPages(v)          { totalPages          = v; }
 
 export function loadStore(resellerName) {
     console.log("Load button pressed");
@@ -27,11 +36,11 @@ export function loadStore(resellerName) {
         progressBar.style.width = `${randomSplit}%`;
     }, 10);
 
-    currentStoreName = resellerName;
-    listingsListenedTo = [];
-    pagesScanned = ['1'];
-    listingDetails = [];
-    totalPages = 1;
+    currentStoreName    = resellerName;
+    listingsListenedTo  = [];
+    pagesScanned        = ['1'];
+    listingDetails      = [];
+    totalPages          = 1;
 
     console.log(`Fetching catalog for store: ${resellerName}`);
 
@@ -52,17 +61,19 @@ export function loadStore(resellerName) {
             setTimeout(() => {
                 const formattedPrice = `${listing.price.value} ${listing.price.currency}`;
                 listingDetails.push({
-                    listing_id: listing.id,
-                    listing_price: formattedPrice,
-                    listing_uri: listing.uri,
-                    listing_condition: listing.condition,
-                    sleeve_condition: listing.sleeve_condition,
-                    release_id: listing.release.id,
+                    listing_id:          listing.id,
+                    listing_price:       formattedPrice,
+                    listing_uri:         listing.uri,
+                    listing_condition:   listing.condition,
+                    sleeve_condition:    listing.sleeve_condition,
+                    release_id:          listing.release.id,
                     release_description: listing.release.description,
-                    release_videos: null,
-                    release_tracklist: null,
-                    release_artists: null,
-                    release_year: null
+                    release_videos:      null,
+                    release_tracklist:   null,
+                    release_artists:     null,
+                    release_year:        null,
+                    release_genres:      null,
+                    release_styles:      null,
                 });
 
                 loadedListings++;

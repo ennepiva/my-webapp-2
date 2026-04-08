@@ -8,16 +8,79 @@
 </head>
 <body>
     <h1>Crate Digger</h1>
-    <div class="search-bar">
-        <label for="resellerName">Record Store:</label>
-        <input list="storeSuggestions" type="text" id="resellerName" name="resellerName">
-        <datalist id="storeSuggestions">
-            <!-- Options will be dynamically populated -->
-        </datalist>
-        <button id="loadButton">Load</button>
+
+    <!-- Mode tabs -->
+    <div class="mode-tabs">
+        <button class="mode-tab active" id="tabStore">Record Store</button>
+        <button class="mode-tab" id="tabSearch">Discogs Search</button>
     </div>
 
-    <!-- Progress bar now placed between the search bar and the buttons -->
+    <!-- Store panel -->
+    <div class="panel" id="panelStore">
+        <div class="search-bar">
+            <label for="resellerName">Store:</label>
+            <input list="storeSuggestions" type="text" id="resellerName" name="resellerName">
+            <datalist id="storeSuggestions"></datalist>
+            <button id="loadButton">Load</button>
+        </div>
+    </div>
+
+    <!-- Discogs Search panel -->
+    <div class="panel hidden" id="panelSearch">
+        <div class="search-grid">
+            <div class="search-field">
+                <label for="sq">Query</label>
+                <input type="text" id="sq" placeholder="artist, title, label…">
+            </div>
+            <div class="search-field">
+                <label for="sGenre">Genre</label>
+                <input list="genreSuggestions" type="text" id="sGenre" placeholder="Electronic, Jazz…">
+                <datalist id="genreSuggestions">
+                    <option value="Electronic">
+                    <option value="Rock">
+                    <option value="Jazz">
+                    <option value="Funk / Soul">
+                    <option value="Hip Hop">
+                    <option value="Classical">
+                    <option value="Reggae">
+                    <option value="Pop">
+                    <option value="Folk, World, & Country">
+                    <option value="Blues">
+                    <option value="Latin">
+                </datalist>
+            </div>
+            <div class="search-field">
+                <label for="sStyle">Style</label>
+                <input list="styleSuggestions" type="text" id="sStyle" placeholder="Techno, Ambient…">
+                <datalist id="styleSuggestions">
+                    <option value="Techno">
+                    <option value="House">
+                    <option value="Deep House">
+                    <option value="Ambient">
+                    <option value="Drum n Bass">
+                    <option value="Disco">
+                    <option value="Dub">
+                    <option value="Acid">
+                    <option value="Minimal">
+                    <option value="Breaks">
+                    <option value="Soul">
+                    <option value="Funk">
+                    <option value="Bebop">
+                    <option value="Free Jazz">
+                </datalist>
+            </div>
+            <div class="search-field">
+                <label for="sYear">Year</label>
+                <input type="text" id="sYear" placeholder="1994">
+            </div>
+            <div class="search-field">
+                <label for="sCountry">Country</label>
+                <input type="text" id="sCountry" placeholder="UK, Germany…">
+            </div>
+        </div>
+        <button id="searchButton">Search</button>
+    </div>
+
     <div class="progress-bar-container">
         <div id="progressBar" class="progress-bar"></div>
     </div>
@@ -29,10 +92,9 @@
     </div>
 
     <div id="listingInfo"></div>
+    <div id="player"></div>
 
-    <div id="player"></div> <!-- The YouTube player will be placed here -->
-
-    <script src="https://www.youtube.com/iframe_api"></script> <!-- YouTube API script -->
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script type="module" src="script.js"></script>
 </body>
 </html>

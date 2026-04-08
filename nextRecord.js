@@ -1,6 +1,9 @@
+// nextRecord.js
+
 import { discogsApiHeaders } from './apiConfig.js';
 import { listingDetails, listingsListenedTo, pagesScanned, currentStoreName, totalPages } from './loadStore.js';
 import { playTrack, getTotalTracks, nextTrackHandler } from './videoSelector.js';
+import { getCurrentSearchParams, fetchRandomSearchPage } from './loadSearch.js';
 
 let nextRecordCount = 0;
 let recordHistory = [];
@@ -12,14 +15,17 @@ export function nextRecord() {
         console.log("No listings available.");
         return;
     }
+
     let randomListingIndex;
     do {
         randomListingIndex = Math.floor(Math.random() * listingDetails.length);
     } while (listingsListenedTo.includes(listingDetails[randomListingIndex].listing_id));
+
     listingsListenedTo.push(listingDetails[randomListingIndex].listing_id);
     recordHistory.push(randomListingIndex);
     currentRecordIndex = recordHistory.length - 1;
     displayListingInfo(listingDetails[randomListingIndex]);
+
     const releaseId = listingDetails[randomListingIndex].release_id;
     fetch(`https://api.discogs.com/releases/${releaseId}`, {
         headers: discogsApiHeaders
@@ -27,17 +33,25 @@ export function nextRecord() {
     .then(response => response.json())
     .then(data => {
         console.log("Fetched release details:", data);
-        listingDetails[randomListingIndex].release_videos = data.videos || [];
-        listingDetails[randomListingIndex].tracklist = data.tracklist || [];
-        listingDetails[randomListingIndex].release_year = data.year || null;
+        listingDetails[randomListingIndex].release_videos  = data.videos    || [];
+        listingDetails[randomListingIndex].tracklist       = data.tracklist  || [];
+        listingDetails[randomListingIndex].release_year    = data.year       || null;
+        listingDetails[randomListingIndex].release_genres  = data.genres     || [];
+        listingDetails[randomListingIndex].release_styles  = data.styles     || [];
         currentVideoIndex = 0;
         playTrack(listingDetails[randomListingIndex], currentVideoIndex);
         displayListingInfo(listingDetails[randomListingIndex]);
     })
     .catch(error => console.error("Error fetching release details:", error));
+
     nextRecordCount++;
     if (nextRecordCount % 6 === 0) {
-        fetchRandomPage();
+        // Use the right paging strategy depending on whether we're in search or store mode
+        if (getCurrentSearchParams()) {
+            fetchRandomSearchPage();
+        } else {
+            fetchRandomStorePage();
+        }
     }
 }
 
@@ -64,17 +78,33 @@ export function nextTrack() {
 
 function displayListingInfo(listing) {
     const listingInfo = document.getElementById('listingInfo');
+
+    const genreTags = [
+        ...(listing.release_genres || []),
+        ...(listing.release_styles || [])
+    ];
+    const tagsHtml = genreTags.length
+        ? `<p class="genre-tags">${genreTags.map(t => `<span class="genre-tag">${t}</span>`).join('')}</p>`
+        : '';
+
+    // Only show price/condition rows for real marketplace listings
+    const isMarketplace = listing.listing_price !== 'N/A';
+    const metaHtml = isMarketplace
+        ? `<p>Released: ${listing.release_year || 'Unknown'} | Price: ${listing.listing_price}</p>
+           <p>Condition: ${listing.listing_condition} | Sleeve: ${listing.sleeve_condition}</p>`
+        : `<p>Released: ${listing.release_year || 'Unknown'}</p>`;
+
     listingInfo.innerHTML = `
         <a href="${listing.listing_uri}" target="_blank">${listing.release_description || 'No description available'}</a>
-        <p>Released: ${listing.release_year || 'Unknown'} | Price: ${listing.listing_price}</p>
-        <p>Condition: ${listing.listing_condition} | Sleeve: ${listing.sleeve_condition}</p>
+        ${metaHtml}
+        ${tagsHtml}
     `;
 }
 
-function fetchRandomPage() {
+function fetchRandomStorePage() {
     const maxPages = Math.min(totalPages, 200);
     if (pagesScanned.length >= maxPages) {
-        console.log("All pages have been scanned. No further API calls will be made.");
+        console.log("All pages have been scanned.");
         return;
     }
     let randomPage;
@@ -82,7 +112,7 @@ function fetchRandomPage() {
         randomPage = Math.floor(Math.random() * maxPages) + 1;
     } while (pagesScanned.includes(randomPage.toString()));
     pagesScanned.push(randomPage.toString());
-    console.log(`Fetching new random page: ${randomPage}`);
+
     let pageToFetch = randomPage;
     let sortOrder = 'desc';
     if (totalPages > 200 && randomPage > 100) {
@@ -92,29 +122,30 @@ function fetchRandomPage() {
         pageToFetch = totalPages - randomPage;
         sortOrder = 'asc';
     }
+
     fetch(`https://api.discogs.com/users/${currentStoreName}/inventory?page=${pageToFetch}&per_page=100&sort=listed&sort_order=${sortOrder}`, {
         headers: discogsApiHeaders
     })
         .then(response => response.json())
         .then(data => {
-            console.log(`Page ${randomPage} (fetched as page ${pageToFetch} with sort ${sortOrder}) received from Discogs API`);
             data.listings.forEach(listing => {
                 const formattedPrice = `${listing.price.value} ${listing.price.currency}`;
                 listingDetails.push({
-                    listing_id: listing.id,
-                    listing_price: formattedPrice,
-                    listing_uri: listing.uri,
-                    listing_condition: listing.condition,
-                    sleeve_condition: listing.sleeve_condition,
-                    release_id: listing.release.id,
+                    listing_id:          listing.id,
+                    listing_price:       formattedPrice,
+                    listing_uri:         listing.uri,
+                    listing_condition:   listing.condition,
+                    sleeve_condition:    listing.sleeve_condition,
+                    release_id:          listing.release.id,
                     release_description: listing.release.description,
-                    release_videos: null,
-                    release_tracklist: null,
-                    release_artists: null,
-                    release_year: null
+                    release_videos:      null,
+                    release_tracklist:   null,
+                    release_artists:     null,
+                    release_year:        null,
+                    release_genres:      null,
+                    release_styles:      null,
                 });
             });
-            console.log("Updated listing details array with new listings:", listingDetails);
         })
-        .catch(error => console.error("Error fetching new page from Discogs API:", error));
+        .catch(error => console.error("Error fetching store page:", error));
 }
