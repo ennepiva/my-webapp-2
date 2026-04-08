@@ -110,20 +110,18 @@
     <div class="player-row">
         <div id="player"></div>
 
-        <!-- Vinyl pitch fader -->
+        <!-- Stepped pitch fader -->
         <div class="pitch-control">
-            <div class="pitch-header">
-                <span class="pitch-label">PITCH</span>
-                <span class="pitch-value" id="pitchValue">0.0%</span>
-            </div>
-            <span class="pitch-tick-label">+10%</span>
-            <div class="pitch-fader-track">
-                <div class="pitch-fader-groove"></div>
+            <span class="pitch-label">PITCH</span>
+            <span class="pitch-value" id="pitchValue">1.0×</span>
+            <!-- Step labels — rendered by JS -->
+            <div class="pitch-fader-wrap" id="pitchFaderWrap">
+                <div class="pitch-groove"></div>
+                <div class="pitch-ticks" id="pitchTicks"></div>
                 <input type="range" id="pitchSlider"
-                       min="-10" max="10" step="0.1" value="0"
+                       min="0" max="4" step="1" value="2"
                        orient="vertical">
             </div>
-            <span class="pitch-tick-label">−10%</span>
             <button class="pitch-reset" id="pitchReset">RESET</button>
         </div>
     </div>

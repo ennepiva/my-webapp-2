@@ -361,27 +361,18 @@ button:hover {
     background-color: #000;
 }
 
-/* ── Pitch fader ───────────────────────────────────────────────────────────── */
+/* ── Pitch fader (stepped) ─────────────────────────────────────────────────── */
 .pitch-control {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px 6px;
+    gap: 8px;
+    padding: 10px 6px;
     border: 1px solid #444;
     background: #1a1a1a;
-    width: 48px;
-    height: auto;
+    width: 52px;
     flex-shrink: 0;
-    justify-content: space-between;
     box-sizing: border-box;
-}
-
-.pitch-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
 }
 
 .pitch-label {
@@ -392,60 +383,107 @@ button:hover {
 }
 
 .pitch-value {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     color: #fff;
     letter-spacing: 0.5px;
     text-align: center;
     white-space: nowrap;
+    min-height: 1em;
 }
 
-.pitch-tick-label {
+/* Step labels column */
+.pitch-steps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    width: 100%;
+}
+
+.pitch-step-label {
     font-size: 0.5rem;
     color: #555;
     letter-spacing: 0.3px;
-}
-
-.pitch-fader-track {
-    position: relative;
+    height: 28px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     width: 100%;
-    height: 160px;   /* explicit px — vertical sliders ignore flex/% height */
-    flex-shrink: 0;
+    padding-right: 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: color 0.15s;
+    user-select: none;
 }
 
-.pitch-fader-groove {
+.pitch-step-label:hover { color: #aaa; }
+
+.pitch-step-label.active {
+    color: #fff;
+    font-weight: bold;
+}
+
+.pitch-step-label.active.positive { color: #aaffaa; }
+.pitch-step-label.active.negative { color: #ffaaaa; }
+
+/* The slider sits on top of the step labels */
+.pitch-fader-wrap {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pitch-groove {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     width: 2px;
-    height: 160px;
+    top: 6px;
+    bottom: 6px;
     background: #3a3a3a;
     border-radius: 1px;
     pointer-events: none;
 }
 
-/* Vertical range input — must have explicit px height */
+/* Tick marks at each step */
+.pitch-ticks {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    pointer-events: none;
+}
+
+.pitch-tick {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 1px;
+    background: #444;
+}
+
+.pitch-tick.center {
+    width: 14px;
+    background: #666;
+}
+
 #pitchSlider {
     writing-mode: vertical-lr;
     direction: rtl;
     -webkit-appearance: slider-vertical;
     appearance: auto;
     width: 32px;
-    height: 160px;
+    height: 140px;
     background: transparent;
     border: none;
     margin: 0;
     padding: 0;
-    cursor: grab;
+    cursor: pointer;
     position: relative;
     z-index: 1;
     flex-shrink: 0;
-}
-
-#pitchSlider:active {
-    cursor: grabbing;
 }
 
 #pitchSlider::-webkit-slider-runnable-track {
@@ -459,9 +497,11 @@ button:hover {
     height: 12px;
     background: #ffffff;
     border-radius: 2px;
-    box-shadow: 0 0 0 1px #000, 0 1px 3px rgba(0,0,0,0.7);
+    box-shadow: 0 0 0 1px #000, 0 1px 4px rgba(0,0,0,0.8);
     cursor: grab;
 }
+
+#pitchSlider:active::-webkit-slider-thumb { cursor: grabbing; }
 
 #pitchSlider::-moz-range-track {
     background: transparent;
@@ -474,7 +514,7 @@ button:hover {
     background: #ffffff;
     border-radius: 2px;
     border: none;
-    box-shadow: 0 0 0 1px #000, 0 1px 3px rgba(0,0,0,0.7);
+    box-shadow: 0 0 0 1px #000, 0 1px 4px rgba(0,0,0,0.8);
     cursor: grab;
 }
 
@@ -500,7 +540,7 @@ button:hover {
     border-color: #fff;
 }
 
-/* Mobile: horizontal fader strip under the player */
+/* Mobile */
 @media only screen and (max-width: 600px) {
     .player-row {
         flex-direction: column;
@@ -520,33 +560,32 @@ button:hover {
     .pitch-control {
         flex-direction: row;
         width: 100%;
-        height: 44px;
+        height: 52px;
         padding: 6px 12px;
         gap: 10px;
         align-items: center;
-        justify-content: space-between;
         border-top: none;
-        box-sizing: border-box;
     }
 
-    .pitch-header {
+    .pitch-fader-wrap {
         flex-direction: row;
-        gap: 6px;
-        flex-shrink: 0;
-    }
-
-    .pitch-fader-track {
         flex: 1;
         height: 32px;
+        align-items: center;
     }
 
-    .pitch-fader-groove {
-        left: 0;
+    .pitch-groove {
         top: 50%;
-        width: 100%;
+        left: 6px;
+        right: 6px;
+        bottom: auto;
+        width: auto;
         height: 2px;
         transform: translateY(-50%);
     }
+
+    .pitch-ticks { display: none; }
+    .pitch-steps { display: none; }
 
     #pitchSlider {
         writing-mode: horizontal-tb;
@@ -561,20 +600,12 @@ button:hover {
         -webkit-appearance: none;
         width: 12px;
         height: 32px;
-        background: #fff;
-        border-radius: 2px;
-        box-shadow: 0 0 0 1px #000;
     }
 
     #pitchSlider::-moz-range-thumb {
         width: 12px;
         height: 32px;
-        background: #fff;
-        border-radius: 2px;
-        border: none;
     }
-
-    .pitch-tick-label { display: none; }
 
     .pitch-reset {
         flex-shrink: 0;
