@@ -29,6 +29,8 @@ function createYouTubePlayer(videoId, callback, errorCallback, stateChangeCallba
                 'onReady': () => {
                     console.log('YouTube Player is ready');
                     if (callback && videoId) callback(player);
+                    // Apply any pitch the user set before the player was ready
+                    if (window.__applyCurrentPitch) window.__applyCurrentPitch();
                 },
                 'onError':       (event) => { if (errorCallback)       errorCallback(event);       else console.error('YouTube Player error:', event); },
                 'onStateChange': (event) => { if (stateChangeCallback) stateChangeCallback(event); }
@@ -137,14 +139,24 @@ document.addEventListener('DOMContentLoaded', () => {
         pitchValue.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
         pitchValue.style.color = pct === 0 ? '#fff' : (pct > 0 ? '#aaffaa' : '#ffaaaa');
         const p = getPlayerInstance();
-        if (p && p.setPlaybackRate) {
-            const allowed = p.getAvailablePlaybackRates
+        if (p && typeof p.setPlaybackRate === 'function') {
+            // YouTube snaps to allowed rates — at ±10% the nearest steps are 0.75 / 1.25
+            // which is audibly clear. Anything between -25%..+25% maps to those steps.
+            const allowed = (typeof p.getAvailablePlaybackRates === 'function')
                 ? p.getAvailablePlaybackRates()
                 : [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
-            const nearest = allowed.reduce((a, b) => Math.abs(b - rate) < Math.abs(a - rate) ? b : a);
+            const nearest = allowed.reduce((a, b) =>
+                Math.abs(b - rate) < Math.abs(a - rate) ? b : a
+            );
+            console.log('[pitch] pct:', pct, '→ rate:', rate, '→ snapped:', nearest, '| available:', allowed);
             p.setPlaybackRate(nearest);
+        } else {
+            console.warn('[pitch] player not ready or setPlaybackRate unavailable', p);
         }
     }
+
+    // Re-apply pitch whenever a new video loads so rate persists across tracks
+    window.__applyCurrentPitch = () => applyPitch(pitchSlider.value);
 
     pitchSlider.addEventListener('input', () => applyPitch(pitchSlider.value));
 

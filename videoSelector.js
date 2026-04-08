@@ -41,6 +41,8 @@ export function playTrack(listing, trackIndex) {
         }, handleVideoError, handleStateChange);
     } else {
         player.loadVideoById(videoId);
+        // Re-apply pitch slider rate after loading new video
+        if (window.__applyCurrentPitch) window.__applyCurrentPitch();
     }
 }
 
