@@ -12,6 +12,10 @@ export function setPlayerInstance(playerInstance) {
     player = playerInstance;
 }
 
+export function getPlayerInstance() {
+    return player;
+}
+
 export function playTrack(listing, trackIndex) {
     if (!listing || !listing.release_videos || listing.release_videos.length === 0) {
         console.error('No videos available for this listing');

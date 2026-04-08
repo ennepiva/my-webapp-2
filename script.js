@@ -2,7 +2,7 @@
 
 import { loadStore } from './loadStore.js';
 import { nextRecord, prevRecord, nextTrack } from './nextRecord.js';
-import { setPlayerInstance } from './videoSelector.js';
+import { setPlayerInstance, getPlayerInstance } from './videoSelector.js';
 import { searchSuggestions } from './config.js';
 import { loadSearch } from './loadSearch.js';
 
@@ -132,17 +132,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const pitchReset  = document.getElementById('pitchReset');
 
     function applyPitch(val) {
-        const pct   = parseFloat(val);
-        const rate  = 1 + pct / 100;
+        const pct = parseFloat(val);
+        const rate = 1 + pct / 100;
         pitchValue.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
         pitchValue.style.color = pct === 0 ? '#fff' : (pct > 0 ? '#aaffaa' : '#ffaaaa');
-        if (player && player.setPlaybackRate) {
-            // YouTube only accepts specific rates — pick nearest available
-            const allowed = player.getAvailablePlaybackRates
-                ? player.getAvailablePlaybackRates()
+        const p = getPlayerInstance();
+        if (p && p.setPlaybackRate) {
+            const allowed = p.getAvailablePlaybackRates
+                ? p.getAvailablePlaybackRates()
                 : [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
             const nearest = allowed.reduce((a, b) => Math.abs(b - rate) < Math.abs(a - rate) ? b : a);
-            player.setPlaybackRate(nearest);
+            p.setPlaybackRate(nearest);
         }
     }
 
