@@ -3,7 +3,7 @@
 import { discogsApiHeaders } from './apiConfig.js';
 import { listingDetails, listingsListenedTo, pagesScanned, currentStoreName, totalPages } from './loadStore.js';
 import { playTrack, getTotalTracks, nextTrackHandler } from './videoSelector.js';
-import { getCurrentSearchParams, fetchRandomSearchPage } from './loadSearch.js';
+import { getCurrentSearchParams, fetchRandomSearchPage, onRecordPlayed } from './loadSearch.js';
 
 let nextRecordCount = 0;
 let recordHistory = [];
@@ -22,6 +22,7 @@ export function nextRecord() {
     } while (listingsListenedTo.includes(listingDetails[randomListingIndex].listing_id));
 
     listingsListenedTo.push(listingDetails[randomListingIndex].listing_id);
+    onRecordPlayed(); // persist session
     recordHistory.push(randomListingIndex);
     currentRecordIndex = recordHistory.length - 1;
     displayListingInfo(listingDetails[randomListingIndex]);
@@ -36,6 +37,8 @@ export function nextRecord() {
         listingDetails[randomListingIndex].release_videos  = data.videos    || [];
         listingDetails[randomListingIndex].tracklist       = data.tracklist  || [];
         listingDetails[randomListingIndex].release_year    = data.year       || null;
+        listingDetails[randomListingIndex].release_genres  = data.genres     || [];
+        listingDetails[randomListingIndex].release_styles  = data.styles     || [];
         listingDetails[randomListingIndex].release_genres  = data.genres     || [];
         listingDetails[randomListingIndex].release_styles  = data.styles     || [];
         currentVideoIndex = 0;

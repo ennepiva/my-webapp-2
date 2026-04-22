@@ -69,9 +69,18 @@
                     <option value="Free Jazz">
                 </datalist>
             </div>
+            <!-- Year range -->
             <div class="search-field">
-                <label for="sYear">Year</label>
-                <input type="text" id="sYear" placeholder="1994">
+                <label for="sYearFrom">Year from</label>
+                <input type="text" id="sYearFrom" placeholder="1988">
+            </div>
+            <div class="search-field">
+                <label for="sYearTo">Year to</label>
+                <input type="text" id="sYearTo" placeholder="1995">
+            </div>
+            <div class="search-field">
+                <label for="sYear">Exact year</label>
+                <input type="text" id="sYear" placeholder="1994 (overrides range)">
             </div>
             <div class="search-field">
                 <label for="sCountry">Country</label>
@@ -79,6 +88,18 @@
             </div>
         </div>
         <button id="searchButton">Search</button>
+
+        <!-- Seed row: shown after a search fires -->
+        <div class="seed-row" id="seedRow" style="display:none">
+            <div class="seed-display-wrap">
+                <span class="seed-label">SESSION KEY</span>
+                <span class="seed-value" id="seedDisplay">----</span>
+            </div>
+            <div class="seed-resume-wrap">
+                <input type="text" id="seedInput" placeholder="Enter key to resume" maxlength="4">
+                <button id="resumeButton">Resume</button>
+            </div>
+        </div>
     </div>
 
     <div class="progress-bar-container">

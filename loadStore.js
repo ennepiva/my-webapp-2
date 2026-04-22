@@ -15,6 +15,14 @@ export function setPagesScanned(v)        { pagesScanned        = v; }
 export function setListingDetails(v)      { listingDetails      = v; }
 export function setTotalPages(v)          { totalPages          = v; }
 
+
+// ── setters (used by loadSearch.js) ──────────────────────────────────────────
+export function setCurrentStoreName(v)    { currentStoreName    = v; }
+export function setListingsListenedTo(v)  { listingsListenedTo  = v; }
+export function setPagesScanned(v)        { pagesScanned        = v; }
+export function setListingDetails(v)      { listingDetails      = v; }
+export function setTotalPages(v)          { totalPages          = v; }
+
 export function loadStore(resellerName) {
     console.log("Load button pressed");
 
