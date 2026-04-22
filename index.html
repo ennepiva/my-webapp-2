@@ -27,7 +27,13 @@
 
     <!-- Discogs Search panel -->
     <div class="panel hidden" id="panelSearch">
-        <div class="search-grid">
+        <!-- Collapsed summary — shown after search -->
+        <div class="search-summary hidden" id="searchSummary">
+            <span class="search-summary-text" id="searchSummaryText"></span>
+            <button class="search-summary-edit" id="searchEditButton">Edit</button>
+        </div>
+        <!-- Full search form — hidden after search -->
+        <div class="search-grid" id="searchGrid">
             <div class="search-field">
                 <label for="sq">Query</label>
                 <input type="text" id="sq" placeholder="artist, title, label…">
@@ -88,17 +94,17 @@
             </div>
         </div>
         <button id="searchButton">Search</button>
+    </div>
 
-        <!-- Seed row: shown after a search fires -->
-        <div class="seed-row" id="seedRow" style="display:none">
-            <div class="seed-display-wrap">
-                <span class="seed-label">SESSION KEY</span>
-                <span class="seed-value" id="seedDisplay">----</span>
-            </div>
-            <div class="seed-resume-wrap">
-                <input type="text" id="seedInput" placeholder="Enter key to resume" maxlength="4">
-                <button id="resumeButton">Resume</button>
-            </div>
+    <!-- Session seed — always visible -->
+    <div class="seed-row" id="seedRow">
+        <div class="seed-display-wrap">
+            <span class="seed-label">SESSION</span>
+            <span class="seed-value" id="seedDisplay">----</span>
+        </div>
+        <div class="seed-resume-wrap">
+            <input type="text" id="seedInput" placeholder="Key" maxlength="4">
+            <button id="resumeButton">Resume</button>
         </div>
     </div>
 

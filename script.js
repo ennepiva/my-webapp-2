@@ -98,6 +98,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Discogs search ───────────────────────────────────────────────────────
+    const searchGrid    = document.getElementById('searchGrid');
+    const searchSummary = document.getElementById('searchSummary');
+    const summaryText   = document.getElementById('searchSummaryText');
+    const editButton    = document.getElementById('searchEditButton');
+
+    function collapseSearch(params) {
+        const parts = [];
+        if (params.genre)    parts.push(params.genre);
+        if (params.style)    parts.push(params.style);
+        if (params.query)    parts.push(`"${params.query}"`);
+        if (params.year)     parts.push(params.year);
+        else if (params.yearFrom || params.yearTo)
+            parts.push(`${params.yearFrom || '…'}–${params.yearTo || '…'}`);
+        if (params.country)  parts.push(params.country);
+        summaryText.textContent = parts.join(' · ') || 'Search active';
+        searchGrid.classList.add('hidden');
+        searchButton.classList.add('hidden');
+        searchSummary.classList.remove('hidden');
+    }
+
+    function expandSearch() {
+        searchGrid.classList.remove('hidden');
+        searchButton.classList.remove('hidden');
+        searchSummary.classList.add('hidden');
+    }
+
+    editButton.addEventListener('click', expandSearch);
+
     searchButton.addEventListener('click', () => {
         const params = collectSearchParams();
         if (!Object.values(params).some(v => v)) {
@@ -106,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         loadSearch(params);
+        collapseSearch(params);
     });
 
     ['sq', 'sGenre', 'sStyle', 'sYear', 'sYearFrom', 'sYearTo', 'sCountry'].forEach(id => {
@@ -143,6 +172,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Auto-restore session on page load ────────────────────────────────────
     const saved = loadSession();
     if (saved) {
+        // Show saved seed key
+        const seedEl = document.getElementById('seedDisplay');
+        if (seedEl) seedEl.textContent = saved.seed;
+        const seedInp = document.getElementById('seedInput');
+        if (seedInp) seedInp.value = saved.seed;
+
         const age  = Date.now() - (saved.savedAt || 0);
         const days = Math.floor(age / 86400000);
         const info = document.getElementById('listingInfo');
@@ -164,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
             info.innerHTML = '';
             tabSearch.click();
             resumeSearch(saved);
+            collapseSearch(saved.params);
         };
         window.__discardSaved = () => {
             clearSession();

@@ -454,3 +454,43 @@ button:hover {
         white-space: nowrap;
     }
 }
+
+/* ── Search summary (collapsed state) ─────────────────────────────────────── */
+.search-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border: 1px solid #444;
+    background: #1a1a1a;
+    gap: 10px;
+}
+
+.search-summary.hidden { display: none; }
+.search-grid.hidden    { display: none; }
+button.hidden          { display: none; }
+
+.search-summary-text {
+    font-size: 0.85rem;
+    color: #ccc;
+    letter-spacing: 0.5px;
+}
+
+.search-summary-edit {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border: 1px solid #666;
+    background: #2a2a2a;
+    color: #aaa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    width: auto;
+    height: auto;
+}
+
+.search-summary-edit:hover {
+    background: #fff;
+    color: #333;
+    border-color: #fff;
+}
