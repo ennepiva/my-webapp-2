@@ -1,52 +1,27 @@
-# Crate Digger - Improved Full Code
+# Crate Digger — full updated code
+
+This bundle keeps the workflow, session, mobile, playback, pagination, and copy-helper improvements, while reverting Discogs authentication to the code-level token in `apiConfig.js`.
 
 ## apiConfig.js
-```js
+
+```javascript
 // apiConfig.js
-// Put your Discogs token in localStorage instead of committing it here:
-// localStorage.setItem('cratedigger_discogs_token', 'YOUR_TOKEN')
-// You can also paste a token into the app if a Discogs request needs one.
 
-const DISCOGS_TOKEN_STORAGE_KEY = 'cratedigger_discogs_token';
-const FALLBACK_USER_AGENT = 'CrateDigger/2.0 +https://www.discogs.com';
-
-export function getDiscogsToken() {
-    try {
-        return localStorage.getItem(DISCOGS_TOKEN_STORAGE_KEY) || '';
-    } catch (e) {
-        return '';
-    }
-}
-
-export function setDiscogsToken(token) {
-    try {
-        const cleaned = String(token || '').trim();
-        if (cleaned) localStorage.setItem(DISCOGS_TOKEN_STORAGE_KEY, cleaned);
-        else localStorage.removeItem(DISCOGS_TOKEN_STORAGE_KEY);
-        return true;
-    } catch (e) {
-        console.warn('Could not save Discogs token:', e);
-        return false;
-    }
-}
+export const discogsApiHeaders = {
+    'Authorization': 'Discogs token=FiTMPlLzFnLRTbthBEROuXqSzNFbRQuqbFCAstXd',
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 8_2_4) Gecko/20100101 Firefox/49.9'
+};
 
 export function getDiscogsApiHeaders() {
-    const headers = { 'User-Agent': FALLBACK_USER_AGENT };
-    const token = getDiscogsToken();
-    if (token) headers.Authorization = `Discogs token=${token}`;
-    return headers;
+    return discogsApiHeaders;
 }
 
-// Kept as an export for backwards compatibility with older modules/imports.
-// New code should call getDiscogsApiHeaders() so token changes are picked up.
-export const discogsApiHeaders = getDiscogsApiHeaders();
-
 export const youtubeApiKey = '';
-
 ```
 
 ## config.js
-```js
+
+```javascript
 export const searchSuggestions = [
     "KillaCutz",
     "OneEyeWitness",
@@ -55,10 +30,10 @@ export const searchSuggestions = [
     "Yoyaku",
     "thevinylcurtain"
 ];
-
 ```
 
 ## index.html
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -189,11 +164,11 @@ export const searchSuggestions = [
     <script type="module" src="script.js"></script>
 </body>
 </html>
-
 ```
 
 ## keyboardShortcuts.js
-```js
+
+```javascript
 // keyboardShortcuts.js
 
 import { nextRecord, prevRecord, nextTrack } from './nextRecord.js';
@@ -302,11 +277,11 @@ export function setCurrentVideoInfo(releaseId, videoId, videoTitle, listing = nu
     currentVideoTitle = String(videoTitle || '');
     currentListing = listing;
 }
-
 ```
 
 ## loadSearch.js
-```js
+
+```javascript
 // loadSearch.js
 
 import { getDiscogsApiHeaders } from './apiConfig.js';
@@ -596,7 +571,7 @@ function assertDiscogsResponse(response) {
 }
 
 function readableDiscogsError(error, fallback) {
-    if (error?.status === 401 || error?.status === 403) return 'Discogs authorization failed. Add or update your Discogs token.';
+    if (error?.status === 401 || error?.status === 403) return 'Discogs authorization failed. Check the Discogs token in apiConfig.js.';
     if (error?.status === 429) return 'Discogs rate limit reached. Try again in a moment.';
     return error?.message || fallback;
 }
@@ -617,11 +592,11 @@ function _updateStatus(message, isError = false) {
     status.textContent = message || '';
     status.classList.toggle('error', Boolean(isError));
 }
-
 ```
 
 ## loadStore.js
-```js
+
+```javascript
 // loadStore.js
 
 import { getDiscogsApiHeaders } from './apiConfig.js';
@@ -861,7 +836,7 @@ function assertDiscogsResponse(response) {
 }
 
 function readableDiscogsError(error, fallback) {
-    if (error?.status === 401 || error?.status === 403) return 'Discogs authorization failed. Add or update your Discogs token.';
+    if (error?.status === 401 || error?.status === 403) return 'Discogs authorization failed. Check the Discogs token in apiConfig.js.';
     if (error?.status === 404) return 'Store not found on Discogs.';
     if (error?.status === 429) return 'Discogs rate limit reached. Try again in a moment.';
     return error?.message || fallback;
@@ -899,11 +874,11 @@ function updateStatus(message, isError = false) {
     status.textContent = message || '';
     status.classList.toggle('error', Boolean(isError));
 }
-
 ```
 
 ## nextRecord.js
-```js
+
+```javascript
 // nextRecord.js
 
 import { getDiscogsApiHeaders } from './apiConfig.js';
@@ -1141,7 +1116,7 @@ function copyToClipboard(value, label = 'Copied') {
 }
 
 function readableDiscogsError(error, fallback) {
-    if (error?.status === 401 || error?.status === 403) return 'Discogs authorization failed. Add or update your Discogs token.';
+    if (error?.status === 401 || error?.status === 403) return 'Discogs authorization failed. Check the Discogs token in apiConfig.js.';
     if (error?.status === 404) return 'Release not found on Discogs.';
     if (error?.status === 429) return 'Discogs rate limit reached. Try again in a moment.';
     return error?.message || fallback;
@@ -1161,11 +1136,11 @@ function escapeHtml(value) {
 }
 
 function escapeAttribute(value) { return escapeHtml(value); }
-
 ```
 
 ## script.js
-```js
+
+```javascript
 // script.js
 
 import { loadStore, resumeStoreSession } from './loadStore.js';
@@ -1174,7 +1149,6 @@ import { setPlayerInstance } from './videoSelector.js';
 import { searchSuggestions } from './config.js';
 import { loadSearch, resumeSearch } from './loadSearch.js';
 import { loadSession, clearSession } from './seedRandom.js';
-import { getDiscogsToken, setDiscogsToken } from './apiConfig.js';
 
 let player = null;
 
@@ -1260,7 +1234,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const editButton        = document.getElementById('searchEditButton');
 
     populateSearchSuggestions();
-    installTokenPromptIfNeeded();
     installSwipeControls();
 
     // ── Tab switching ────────────────────────────────────────────────────────
@@ -1458,19 +1431,6 @@ function installSwipeControls() {
     }, { passive: true });
 }
 
-function installTokenPromptIfNeeded() {
-    if (getDiscogsToken()) return;
-    updateStatus('No Discogs token saved. Requests may be rate-limited. Press T while focused on the page to add one.');
-    document.addEventListener('keydown', event => {
-        if (event.key !== 'T' || event.target?.tagName?.toLowerCase() === 'input') return;
-        const token = window.prompt('Paste your Discogs token. It will be stored locally in this browser only.');
-        if (token) {
-            setDiscogsToken(token);
-            updateStatus('Discogs token saved locally.');
-        }
-    });
-}
-
 function updateStatus(message, isError = false) {
     const status = document.getElementById('statusLine');
     if (!status) return;
@@ -1490,11 +1450,11 @@ function escapeHtml(value) {
 }
 
 export { createYouTubePlayer };
-
 ```
 
 ## seedRandom.js
-```js
+
+```javascript
 // seedRandom.js
 // Seeded pseudo-random number generator + backwards-compatible session storage.
 
@@ -1657,10 +1617,10 @@ export function clearSession() {
         console.warn('Could not clear saved session:', e);
     }
 }
-
 ```
 
 ## style.css
+
 ```css
 * {
     margin: 0;
@@ -2294,11 +2254,11 @@ button.hidden          { display: none; }
         height: auto;
     }
 }
-
 ```
 
 ## videoSelector.js
-```js
+
+```javascript
 // videoSelector.js
 
 import { setCurrentVideoInfo } from './keyboardShortcuts.js';
@@ -2473,6 +2433,4 @@ function updateStatus(message, isError = false) {
     status.textContent = message || '';
     status.classList.toggle('error', Boolean(isError));
 }
-
 ```
-

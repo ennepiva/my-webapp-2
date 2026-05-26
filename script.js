@@ -6,7 +6,6 @@ import { setPlayerInstance } from './videoSelector.js';
 import { searchSuggestions } from './config.js';
 import { loadSearch, resumeSearch } from './loadSearch.js';
 import { loadSession, clearSession } from './seedRandom.js';
-import { getDiscogsToken, setDiscogsToken } from './apiConfig.js';
 
 let player = null;
 
@@ -92,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const editButton        = document.getElementById('searchEditButton');
 
     populateSearchSuggestions();
-    installTokenPromptIfNeeded();
     installSwipeControls();
 
     // ── Tab switching ────────────────────────────────────────────────────────
@@ -288,19 +286,6 @@ function installSwipeControls() {
             nextTrack();
         }
     }, { passive: true });
-}
-
-function installTokenPromptIfNeeded() {
-    if (getDiscogsToken()) return;
-    updateStatus('No Discogs token saved. Requests may be rate-limited. Press T while focused on the page to add one.');
-    document.addEventListener('keydown', event => {
-        if (event.key !== 'T' || event.target?.tagName?.toLowerCase() === 'input') return;
-        const token = window.prompt('Paste your Discogs token. It will be stored locally in this browser only.');
-        if (token) {
-            setDiscogsToken(token);
-            updateStatus('Discogs token saved locally.');
-        }
-    });
 }
 
 function updateStatus(message, isError = false) {

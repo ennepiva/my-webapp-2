@@ -237,7 +237,7 @@ function assertDiscogsResponse(response) {
 }
 
 function readableDiscogsError(error, fallback) {
-    if (error?.status === 401 || error?.status === 403) return 'Discogs authorization failed. Add or update your Discogs token.';
+    if (error?.status === 401 || error?.status === 403) return 'Discogs authorization failed. Check the Discogs token in apiConfig.js.';
     if (error?.status === 404) return 'Store not found on Discogs.';
     if (error?.status === 429) return 'Discogs rate limit reached. Try again in a moment.';
     return error?.message || fallback;
