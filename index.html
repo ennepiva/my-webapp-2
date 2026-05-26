@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Crate Digger</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -10,37 +10,37 @@
     <h1>Crate Digger</h1>
 
     <!-- Mode tabs -->
-    <div class="mode-tabs">
-        <button class="mode-tab active" id="tabStore">Record Store</button>
-        <button class="mode-tab" id="tabSearch">Discogs Search</button>
+    <div class="mode-tabs" role="tablist" aria-label="Mode">
+        <button class="mode-tab active" id="tabStore" type="button" role="tab" aria-selected="true" aria-controls="panelStore">Record Store</button>
+        <button class="mode-tab" id="tabSearch" type="button" role="tab" aria-selected="false" aria-controls="panelSearch">Discogs Search</button>
     </div>
 
     <!-- Store panel -->
-    <div class="panel" id="panelStore">
+    <div class="panel" id="panelStore" role="tabpanel" aria-labelledby="tabStore">
         <div class="search-bar">
             <label for="resellerName">Store:</label>
-            <input list="storeSuggestions" type="text" id="resellerName" name="resellerName">
+            <input list="storeSuggestions" type="text" id="resellerName" name="resellerName" autocomplete="off" autocapitalize="none" spellcheck="false">
             <datalist id="storeSuggestions"></datalist>
-            <button id="loadButton">Load</button>
+            <button id="loadButton" type="button">Load</button>
         </div>
     </div>
 
     <!-- Discogs Search panel -->
-    <div class="panel hidden" id="panelSearch">
+    <div class="panel hidden" id="panelSearch" role="tabpanel" aria-labelledby="tabSearch">
         <!-- Collapsed summary — shown after search -->
         <div class="search-summary hidden" id="searchSummary">
             <span class="search-summary-text" id="searchSummaryText"></span>
-            <button class="search-summary-edit" id="searchEditButton">Edit</button>
+            <button class="search-summary-edit" id="searchEditButton" type="button">Edit</button>
         </div>
         <!-- Full search form — hidden after search -->
         <div class="search-grid" id="searchGrid">
             <div class="search-field">
                 <label for="sq">Query</label>
-                <input type="text" id="sq" placeholder="artist, title, label…">
+                <input type="text" id="sq" placeholder="artist, title, label…" autocomplete="off" spellcheck="false">
             </div>
             <div class="search-field">
                 <label for="sGenre">Genre</label>
-                <input list="genreSuggestions" type="text" id="sGenre" placeholder="Electronic, Jazz…">
+                <input list="genreSuggestions" type="text" id="sGenre" placeholder="Electronic, Jazz…" autocomplete="off" spellcheck="false">
                 <datalist id="genreSuggestions">
                     <option value="Electronic">
                     <option value="Rock">
@@ -57,7 +57,7 @@
             </div>
             <div class="search-field">
                 <label for="sStyle">Style</label>
-                <input list="styleSuggestions" type="text" id="sStyle" placeholder="Techno, Ambient…">
+                <input list="styleSuggestions" type="text" id="sStyle" placeholder="Techno, Ambient…" autocomplete="off" spellcheck="false">
                 <datalist id="styleSuggestions">
                     <option value="Techno">
                     <option value="House">
@@ -78,44 +78,46 @@
             <!-- Year range -->
             <div class="search-field">
                 <label for="sYearFrom">Year from</label>
-                <input type="text" id="sYearFrom" placeholder="1988">
+                <input type="text" id="sYearFrom" inputmode="numeric" placeholder="1988" autocomplete="off">
             </div>
             <div class="search-field">
                 <label for="sYearTo">Year to</label>
-                <input type="text" id="sYearTo" placeholder="1995">
+                <input type="text" id="sYearTo" inputmode="numeric" placeholder="1995" autocomplete="off">
             </div>
             <div class="search-field">
                 <label for="sYear">Exact year</label>
-                <input type="text" id="sYear" placeholder="1994 (overrides range)">
+                <input type="text" id="sYear" inputmode="numeric" placeholder="1994 (overrides range)" autocomplete="off">
             </div>
             <div class="search-field">
                 <label for="sCountry">Country</label>
-                <input type="text" id="sCountry" placeholder="UK, Germany…">
+                <input type="text" id="sCountry" placeholder="UK, Germany…" autocomplete="off" spellcheck="false">
             </div>
         </div>
-        <button id="searchButton">Search</button>
+        <button id="searchButton" type="button">Search</button>
     </div>
 
     <!-- Session seed — always visible -->
     <div class="seed-row" id="seedRow">
         <div class="seed-display-wrap">
             <span class="seed-label">SESSION</span>
-            <span class="seed-value" id="seedDisplay">----</span>
+            <button class="seed-value seed-copy" id="seedDisplay" type="button" title="Copy session key">----</button>
         </div>
         <div class="seed-resume-wrap">
-            <input type="text" id="seedInput" placeholder="Key" maxlength="4">
-            <button id="resumeButton">Resume</button>
+            <input type="text" id="seedInput" placeholder="Key" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false">
+            <button id="resumeButton" type="button">Resume</button>
         </div>
     </div>
 
-    <div class="progress-bar-container">
+    <div class="progress-bar-container" aria-label="Loading progress">
         <div id="progressBar" class="progress-bar"></div>
     </div>
 
-    <div class="controls">
-        <button id="prevRecordButton">Prev Record</button>
-        <button id="nextRecordButton">Next Record</button>
-        <button id="nextTrackButton">Next Track</button>
+    <div class="status-line" id="statusLine" role="status" aria-live="polite"></div>
+
+    <div class="controls" aria-label="Playback controls">
+        <button id="prevRecordButton" type="button" data-mobile-label="Prev">Prev Record</button>
+        <button id="nextRecordButton" type="button" data-mobile-label="Next">Next Record</button>
+        <button id="nextTrackButton" type="button" data-mobile-label="Track">Next Track</button>
     </div>
 
     <div id="listingInfo"></div>

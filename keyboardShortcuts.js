@@ -1,26 +1,43 @@
+// keyboardShortcuts.js
+
 import { nextRecord, prevRecord, nextTrack } from './nextRecord.js';
 
-let currentVideoId = '';  // To track the current video ID being played
-let currentReleaseId = ''; // To track the current release ID
-let currentVideoTitle = ''; // To track the current video title being played
+let currentVideoId = '';
+let currentReleaseId = '';
+let currentVideoTitle = '';
+let currentListing = null;
 
 document.addEventListener('keydown', function(event) {
-    switch(event.key) {
-        case 'a': // Left arrow for Previous Record
+    const tag = event.target?.tagName?.toLowerCase();
+    if (['input', 'textarea', 'select'].includes(tag)) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+    switch(event.key.toLowerCase()) {
+        case 'a':
+        case 'arrowleft':
             prevRecord();
             break;
-        case 'd': // Right arrow for Next Record
+        case 'd':
+        case 'arrowright':
             nextRecord();
             break;
-        case 's': // Down arrow for Next Track
-        case 'w':   // Up arrow for Next Track
+        case 's':
+        case 'w':
+        case 'arrowdown':
+        case 'arrowup':
             nextTrack();
             break;
-        case 't': // 't' to copy the YouTube video title to clipboard
+        case 't':
             copyVideoTitleToClipboard();
             break;
-        case 'v': // 'v' to copy the release ID and video ID to clipboard
+        case 'v':
             copyReleaseAndVideoToClipboard();
+            break;
+        case 'f':
+            copyFolderNameToClipboard();
+            break;
+        case '/':
+            showShortcutHelp();
             break;
         default:
             break;
@@ -28,32 +45,64 @@ document.addEventListener('keydown', function(event) {
 });
 
 function copyVideoTitleToClipboard() {
-    if (currentVideoTitle) {
-        navigator.clipboard.writeText(currentVideoTitle).then(() => {
-            console.log('Video title copied to clipboard:', currentVideoTitle);
-        }).catch(err => {
-            console.error('Failed to copy video title:', err);
-        });
-    } else {
-        console.log('No video is currently playing.');
-    }
+    copyToClipboard(currentVideoTitle, 'Video title copied.');
 }
 
 function copyReleaseAndVideoToClipboard() {
     if (currentReleaseId && currentVideoId) {
-        const textToCopy = `'${currentReleaseId}','${currentVideoId}'`;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            console.log('Release ID and Video ID copied to clipboard:', textToCopy);
-        }).catch(err => {
-            console.error('Failed to copy release ID and video ID:', err);
-        });
+        copyToClipboard(`'${currentReleaseId}','${currentVideoId}'`, 'Release/video IDs copied.');
     } else {
-        console.log('Release ID or Video ID is not available.');
+        updateStatus('Release ID or video ID is not available.', true);
     }
 }
 
-export function setCurrentVideoInfo(releaseId, videoId, videoTitle) {
-    currentReleaseId = releaseId;
-    currentVideoId = videoId;
-    currentVideoTitle = videoTitle;
+function copyFolderNameToClipboard() {
+    if (!currentListing) {
+        updateStatus('No record selected.', true);
+        return;
+    }
+    const styles = [...(currentListing.release_styles || []), ...(currentListing.release_genres || [])].slice(0, 3).join(', ');
+    const year = currentListing.release_year ? ` (${currentListing.release_year})` : '';
+    const suffix = styles ? ` [${styles}]` : '';
+    const folder = cleanFileName(`${currentListing.release_description || 'Unknown Release'}${year}${suffix}`);
+    copyToClipboard(folder, 'Folder name copied.');
+}
+
+function showShortcutHelp() {
+    updateStatus('Shortcuts: A/← previous, D/→ next record, W/S/↑/↓ next track, T title, V IDs, F folder.');
+}
+
+function copyToClipboard(value, successMessage) {
+    if (!value) {
+        updateStatus('Nothing to copy yet.', true);
+        return;
+    }
+    navigator.clipboard.writeText(value).then(() => {
+        updateStatus(successMessage);
+    }).catch(err => {
+        updateStatus('Clipboard copy failed.', true);
+        console.error('Clipboard copy failed:', err);
+    });
+}
+
+function cleanFileName(value) {
+    return String(value || '')
+        .replace(/[\\/:*?"<>|]/g, '-')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 180);
+}
+
+function updateStatus(message, isError = false) {
+    const status = document.getElementById('statusLine');
+    if (!status) return;
+    status.textContent = message || '';
+    status.classList.toggle('error', Boolean(isError));
+}
+
+export function setCurrentVideoInfo(releaseId, videoId, videoTitle, listing = null) {
+    currentReleaseId = String(releaseId || '');
+    currentVideoId = String(videoId || '');
+    currentVideoTitle = String(videoTitle || '');
+    currentListing = listing;
 }
