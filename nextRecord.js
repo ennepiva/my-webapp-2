@@ -180,8 +180,6 @@ function displayListingInfo(listing, options = {}) {
     const artists = Array.isArray(listing.release_artists)
         ? listing.release_artists.map(a => a.name).filter(Boolean).join(', ')
         : '';
-    const searchText = makeSoulseekSearchText(listing);
-    const folderText = makeFolderName(listing);
     const loadingHtml = options.loading ? '<p class="loading-copy">Loading release videos…</p>' : '';
 
     listingInfo.innerHTML = `
@@ -190,48 +188,7 @@ function displayListingInfo(listing, options = {}) {
         ${metaHtml}
         ${tagsHtml}
         ${loadingHtml}
-        <div class="listing-actions">
-            <button type="button" class="utility-button" data-copy-value="${escapeAttribute(searchText)}">Copy Soulseek Search</button>
-            <button type="button" class="utility-button" data-copy-value="${escapeAttribute(folderText)}">Copy Folder Name</button>
-            <button type="button" class="utility-button" data-copy-value="${escapeAttribute(String(listing.release_id || ''))}">Copy Release ID</button>
-        </div>
     `;
-
-    listingInfo.querySelectorAll('[data-copy-value]').forEach(button => {
-        button.addEventListener('click', () => copyToClipboard(button.dataset.copyValue || '', button.textContent));
-    });
-}
-
-function makeSoulseekSearchText(listing) {
-    const title = listing.release_description || '';
-    const year = listing.release_year ? ` ${listing.release_year}` : '';
-    return cleanCopyText(`${title}${year}`);
-}
-
-function makeFolderName(listing) {
-    const title = listing.release_description || 'Unknown Release';
-    const year = listing.release_year ? ` (${listing.release_year})` : '';
-    const styles = [...(listing.release_styles || []), ...(listing.release_genres || [])].slice(0, 3).join(', ');
-    const suffix = styles ? ` [${styles}]` : '';
-    return cleanFileName(`${title}${year}${suffix}`);
-}
-
-function cleanCopyText(value) {
-    return String(value || '').replace(/\s+/g, ' ').trim();
-}
-
-function cleanFileName(value) {
-    return cleanCopyText(value).replace(/[\\/:*?"<>|]/g, '-').replace(/\s+-\s+/g, ' - ').slice(0, 180);
-}
-
-function copyToClipboard(value, label = 'Copied') {
-    if (!value) return;
-    navigator.clipboard.writeText(value).then(() => {
-        updateStatus(`${label} copied.`);
-    }).catch(err => {
-        updateStatus('Clipboard copy failed.', true);
-        console.error('Copy failed:', err);
-    });
 }
 
 function readableDiscogsError(error, fallback) {

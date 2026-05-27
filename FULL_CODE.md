@@ -1,6 +1,4 @@
-# Crate Digger — full updated code
-
-This bundle keeps the workflow, session, mobile, playback, pagination, and copy-helper improvements, while reverting Discogs authentication to the code-level token in `apiConfig.js`.
+# Crate Digger — Full Code
 
 ## apiConfig.js
 
@@ -17,6 +15,7 @@ export function getDiscogsApiHeaders() {
 }
 
 export const youtubeApiKey = '';
+
 ```
 
 ## config.js
@@ -30,6 +29,7 @@ export const searchSuggestions = [
     "Yoyaku",
     "thevinylcurtain"
 ];
+
 ```
 
 ## index.html
@@ -45,6 +45,7 @@ export const searchSuggestions = [
 </head>
 <body>
     <h1>Crate Digger</h1>
+    <button class="setup-toggle" id="setupToggle" type="button" aria-expanded="false">Setup</button>
 
     <!-- Mode tabs -->
     <div class="mode-tabs" role="tablist" aria-label="Mode">
@@ -164,6 +165,7 @@ export const searchSuggestions = [
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
 ```
 
 ## keyboardShortcuts.js
@@ -176,7 +178,6 @@ import { nextRecord, prevRecord, nextTrack } from './nextRecord.js';
 let currentVideoId = '';
 let currentReleaseId = '';
 let currentVideoTitle = '';
-let currentListing = null;
 
 document.addEventListener('keydown', function(event) {
     const tag = event.target?.tagName?.toLowerCase();
@@ -204,9 +205,6 @@ document.addEventListener('keydown', function(event) {
         case 'v':
             copyReleaseAndVideoToClipboard();
             break;
-        case 'f':
-            copyFolderNameToClipboard();
-            break;
         case '/':
             showShortcutHelp();
             break;
@@ -216,67 +214,39 @@ document.addEventListener('keydown', function(event) {
 });
 
 function copyVideoTitleToClipboard() {
-    copyToClipboard(currentVideoTitle, 'Video title copied.');
+    copyToClipboard(currentVideoTitle, 'Video title');
 }
 
 function copyReleaseAndVideoToClipboard() {
     if (currentReleaseId && currentVideoId) {
-        copyToClipboard(`'${currentReleaseId}','${currentVideoId}'`, 'Release/video IDs copied.');
+        copyToClipboard(`'${currentReleaseId}','${currentVideoId}'`, 'Release/video IDs');
     } else {
-        updateStatus('Release ID or video ID is not available.', true);
+        console.log('Release ID or video ID is not available.');
     }
-}
-
-function copyFolderNameToClipboard() {
-    if (!currentListing) {
-        updateStatus('No record selected.', true);
-        return;
-    }
-    const styles = [...(currentListing.release_styles || []), ...(currentListing.release_genres || [])].slice(0, 3).join(', ');
-    const year = currentListing.release_year ? ` (${currentListing.release_year})` : '';
-    const suffix = styles ? ` [${styles}]` : '';
-    const folder = cleanFileName(`${currentListing.release_description || 'Unknown Release'}${year}${suffix}`);
-    copyToClipboard(folder, 'Folder name copied.');
 }
 
 function showShortcutHelp() {
-    updateStatus('Shortcuts: A/← previous, D/→ next record, W/S/↑/↓ next track, T title, V IDs, F folder.');
+    console.log('Shortcuts: A/← previous, D/→ next record, W/S/↑/↓ next track, T title, V IDs.');
 }
 
-function copyToClipboard(value, successMessage) {
+function copyToClipboard(value, label) {
     if (!value) {
-        updateStatus('Nothing to copy yet.', true);
+        console.log('Nothing to copy yet.');
         return;
     }
     navigator.clipboard.writeText(value).then(() => {
-        updateStatus(successMessage);
+        console.log(`${label} copied to clipboard:`, value);
     }).catch(err => {
-        updateStatus('Clipboard copy failed.', true);
         console.error('Clipboard copy failed:', err);
     });
 }
 
-function cleanFileName(value) {
-    return String(value || '')
-        .replace(/[\\/:*?"<>|]/g, '-')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, 180);
-}
-
-function updateStatus(message, isError = false) {
-    const status = document.getElementById('statusLine');
-    if (!status) return;
-    status.textContent = message || '';
-    status.classList.toggle('error', Boolean(isError));
-}
-
-export function setCurrentVideoInfo(releaseId, videoId, videoTitle, listing = null) {
+export function setCurrentVideoInfo(releaseId, videoId, videoTitle) {
     currentReleaseId = String(releaseId || '');
     currentVideoId = String(videoId || '');
     currentVideoTitle = String(videoTitle || '');
-    currentListing = listing;
 }
+
 ```
 
 ## loadSearch.js
@@ -592,6 +562,7 @@ function _updateStatus(message, isError = false) {
     status.textContent = message || '';
     status.classList.toggle('error', Boolean(isError));
 }
+
 ```
 
 ## loadStore.js
@@ -874,6 +845,7 @@ function updateStatus(message, isError = false) {
     status.textContent = message || '';
     status.classList.toggle('error', Boolean(isError));
 }
+
 ```
 
 ## nextRecord.js
@@ -1061,8 +1033,6 @@ function displayListingInfo(listing, options = {}) {
     const artists = Array.isArray(listing.release_artists)
         ? listing.release_artists.map(a => a.name).filter(Boolean).join(', ')
         : '';
-    const searchText = makeSoulseekSearchText(listing);
-    const folderText = makeFolderName(listing);
     const loadingHtml = options.loading ? '<p class="loading-copy">Loading release videos…</p>' : '';
 
     listingInfo.innerHTML = `
@@ -1071,48 +1041,7 @@ function displayListingInfo(listing, options = {}) {
         ${metaHtml}
         ${tagsHtml}
         ${loadingHtml}
-        <div class="listing-actions">
-            <button type="button" class="utility-button" data-copy-value="${escapeAttribute(searchText)}">Copy Soulseek Search</button>
-            <button type="button" class="utility-button" data-copy-value="${escapeAttribute(folderText)}">Copy Folder Name</button>
-            <button type="button" class="utility-button" data-copy-value="${escapeAttribute(String(listing.release_id || ''))}">Copy Release ID</button>
-        </div>
     `;
-
-    listingInfo.querySelectorAll('[data-copy-value]').forEach(button => {
-        button.addEventListener('click', () => copyToClipboard(button.dataset.copyValue || '', button.textContent));
-    });
-}
-
-function makeSoulseekSearchText(listing) {
-    const title = listing.release_description || '';
-    const year = listing.release_year ? ` ${listing.release_year}` : '';
-    return cleanCopyText(`${title}${year}`);
-}
-
-function makeFolderName(listing) {
-    const title = listing.release_description || 'Unknown Release';
-    const year = listing.release_year ? ` (${listing.release_year})` : '';
-    const styles = [...(listing.release_styles || []), ...(listing.release_genres || [])].slice(0, 3).join(', ');
-    const suffix = styles ? ` [${styles}]` : '';
-    return cleanFileName(`${title}${year}${suffix}`);
-}
-
-function cleanCopyText(value) {
-    return String(value || '').replace(/\s+/g, ' ').trim();
-}
-
-function cleanFileName(value) {
-    return cleanCopyText(value).replace(/[\\/:*?"<>|]/g, '-').replace(/\s+-\s+/g, ' - ').slice(0, 180);
-}
-
-function copyToClipboard(value, label = 'Copied') {
-    if (!value) return;
-    navigator.clipboard.writeText(value).then(() => {
-        updateStatus(`${label} copied.`);
-    }).catch(err => {
-        updateStatus('Clipboard copy failed.', true);
-        console.error('Copy failed:', err);
-    });
 }
 
 function readableDiscogsError(error, fallback) {
@@ -1136,6 +1065,7 @@ function escapeHtml(value) {
 }
 
 function escapeAttribute(value) { return escapeHtml(value); }
+
 ```
 
 ## script.js
@@ -1232,9 +1162,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchSummary     = document.getElementById('searchSummary');
     const summaryText       = document.getElementById('searchSummaryText');
     const editButton        = document.getElementById('searchEditButton');
+    const setupToggle       = document.getElementById('setupToggle');
 
     populateSearchSuggestions();
     installSwipeControls();
+    installSetupToggle(setupToggle);
 
     // ── Tab switching ────────────────────────────────────────────────────────
     function activateTab(mode) {
@@ -1256,6 +1188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name) {
             clearSession();
             loadStore(name);
+            enterDiggingMode();
         } else {
             updateStatus('Enter a store name first.', true);
         }
@@ -1305,6 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearSession();
         loadSearch(params);
         collapseSearch(params);
+        enterDiggingMode();
     });
 
     ['sq', 'sGenre', 'sStyle', 'sYear', 'sYearFrom', 'sYearTo', 'sCountry'].forEach(id => {
@@ -1320,6 +1254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const session = loadSession();
         if (session && session.seed === key) {
             resumeLoadedSession(session, collapseSearch, activateTab);
+            enterDiggingMode();
         } else {
             const params = collectSearchParams();
             if (!Object.values(params).some(v => v)) {
@@ -1328,6 +1263,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             loadSearch(params, key);
             collapseSearch(params);
+            enterDiggingMode();
         }
     });
 
@@ -1335,7 +1271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         seedInput.value = seedInput.value.toUpperCase().replace(/[^A-Z2-9]/g, '').slice(0, 4);
     });
     seedInput.addEventListener('keydown', e => { if (e.key === 'Enter') resumeButton.click(); });
-    seedDisplay.addEventListener('click', () => copyToClipboard(seedDisplay.textContent.trim(), 'Session key copied.'));
+    seedDisplay.addEventListener('click', () => copyToClipboard(seedDisplay.textContent.trim(), 'Session key'));
 
     // ── Playback controls ────────────────────────────────────────────────────
     nextRecordButton.addEventListener('click', () => nextRecord());
@@ -1379,15 +1315,18 @@ function showSavedSessionBanner(saved, collapseSearch, activateTab) {
     document.getElementById('resumeSavedButton')?.addEventListener('click', () => {
         info.innerHTML = '';
         resumeLoadedSession(saved, collapseSearch, activateTab);
+        enterDiggingMode();
     });
     document.getElementById('discardSavedButton')?.addEventListener('click', () => {
         clearSession();
         info.innerHTML = '';
         updateStatus('Saved session discarded.');
+        leaveDiggingMode();
     });
 }
 
 function resumeLoadedSession(session, collapseSearch, activateTab) {
+    enterDiggingMode();
     if (session.mode === 'store') {
         activateTab('store');
         const input = document.getElementById('resellerName');
@@ -1397,6 +1336,35 @@ function resumeLoadedSession(session, collapseSearch, activateTab) {
         activateTab('search');
         resumeSearch(session);
         collapseSearch(session.params || {});
+    }
+}
+
+function installSetupToggle(setupToggle) {
+    if (!setupToggle) return;
+    setupToggle.addEventListener('click', () => {
+        const open = !document.body.classList.contains('setup-open');
+        document.body.classList.toggle('setup-open', open);
+        setupToggle.setAttribute('aria-expanded', String(open));
+        setupToggle.textContent = open ? 'Hide setup' : 'Setup';
+    });
+}
+
+function enterDiggingMode() {
+    document.body.classList.add('is-digging');
+    document.body.classList.remove('setup-open');
+    const setupToggle = document.getElementById('setupToggle');
+    if (setupToggle) {
+        setupToggle.setAttribute('aria-expanded', 'false');
+        setupToggle.textContent = 'Setup';
+    }
+}
+
+function leaveDiggingMode() {
+    document.body.classList.remove('is-digging', 'setup-open');
+    const setupToggle = document.getElementById('setupToggle');
+    if (setupToggle) {
+        setupToggle.setAttribute('aria-expanded', 'false');
+        setupToggle.textContent = 'Setup';
     }
 }
 
@@ -1438,9 +1406,11 @@ function updateStatus(message, isError = false) {
     status.classList.toggle('error', Boolean(isError));
 }
 
-function copyToClipboard(value, successMessage) {
+function copyToClipboard(value, label) {
     if (!value || value === '----') return;
-    navigator.clipboard.writeText(value).then(() => updateStatus(successMessage || 'Copied.'));
+    navigator.clipboard.writeText(value).then(() => {
+        console.log(`${label || 'Value'} copied to clipboard:`, value);
+    }).catch(err => console.error('Clipboard copy failed:', err));
 }
 
 function escapeHtml(value) {
@@ -1450,6 +1420,7 @@ function escapeHtml(value) {
 }
 
 export { createYouTubePlayer };
+
 ```
 
 ## seedRandom.js
@@ -1617,6 +1588,7 @@ export function clearSession() {
         console.warn('Could not clear saved session:', e);
     }
 }
+
 ```
 
 ## style.css
@@ -2254,6 +2226,256 @@ button.hidden          { display: none; }
         height: auto;
     }
 }
+
+/* ── Mobile listen-first layout ───────────────────────────────────────────── */
+.setup-toggle {
+    display: none;
+}
+
+@media only screen and (max-width: 600px) {
+    body {
+        justify-content: flex-start;
+        align-items: stretch;
+        padding: max(env(safe-area-inset-top), 8px) 10px calc(env(safe-area-inset-bottom) + 82px) 10px;
+        gap: 0;
+    }
+
+    h1 {
+        order: 0;
+        font-size: 1.35rem;
+        line-height: 1;
+        margin: 8px 0 8px;
+        text-align: center;
+    }
+
+    .setup-toggle {
+        order: 1;
+        display: none;
+        position: fixed;
+        top: calc(env(safe-area-inset-top) + 8px);
+        right: 10px;
+        z-index: 1100;
+        width: auto;
+        height: auto;
+        min-height: 32px;
+        padding: 6px 10px;
+        font-size: 0.7rem;
+        border-color: #666;
+        color: #aaa;
+        background: rgba(34, 34, 34, 0.94);
+        border-radius: 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    body.is-digging .setup-toggle {
+        display: block;
+    }
+
+    body.is-digging h1 {
+        align-self: flex-start;
+        max-width: calc(100% - 92px);
+        margin: 4px 0 6px;
+        font-size: 1rem;
+        text-align: left;
+    }
+
+    .mode-tabs {
+        order: 2;
+        margin-bottom: 8px;
+    }
+
+    .panel {
+        order: 3;
+        margin-bottom: 8px;
+    }
+
+    .seed-row {
+        order: 4;
+        margin: 0 0 8px;
+        padding: 6px 8px;
+    }
+
+    .progress-bar-container {
+        order: 5;
+        margin: 4px 0 8px;
+    }
+
+    .status-line {
+        order: 6;
+        min-height: 0;
+        margin: 0 0 4px;
+    }
+
+    #player {
+        order: 7;
+        width: 100%;
+        max-width: none;
+        aspect-ratio: 16 / 9;
+        height: auto;
+        margin: 4px 0 8px;
+        border-radius: 0;
+    }
+
+    #listingInfo {
+        order: 8;
+        margin: 0;
+        padding: 10px 10px 8px;
+        min-height: 0;
+        max-height: calc(100vh - 360px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        background: rgba(0, 0, 0, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 0;
+        font-size: 0.8rem;
+        line-height: 1.28;
+    }
+
+    #listingInfo a {
+        margin-bottom: 5px;
+        font-size: 0.92rem;
+        line-height: 1.2;
+    }
+
+    #listingInfo p {
+        margin: 0.28rem 0;
+    }
+
+    .genre-tags {
+        gap: 4px;
+        margin-top: 5px;
+    }
+
+    .genre-tag {
+        padding: 1px 6px;
+        font-size: 0.62rem;
+        border-radius: 0;
+    }
+
+    body.is-digging:not(.setup-open) .mode-tabs,
+    body.is-digging:not(.setup-open) .panel,
+    body.is-digging:not(.setup-open) .seed-row {
+        display: none;
+    }
+
+    body.is-digging.setup-open .mode-tabs,
+    body.is-digging.setup-open .panel,
+    body.is-digging.setup-open .seed-row {
+        display: flex;
+    }
+
+    body.is-digging.setup-open #panelStore.hidden,
+    body.is-digging.setup-open #panelSearch.hidden {
+        display: none;
+    }
+
+    body.is-digging.setup-open .search-grid {
+        max-height: 42vh;
+        overflow-y: auto;
+        padding-right: 2px;
+    }
+
+    body.is-digging.setup-open #player {
+        margin-top: 6px;
+    }
+
+    .controls {
+        padding: 8px 10px;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
+        gap: 7px;
+    }
+
+    .controls button {
+        min-height: 54px;
+        height: 54px;
+        border-radius: 0;
+        padding: 8px 6px;
+        line-height: 1;
+    }
+
+    #prevRecordButton {
+        order: 1;
+        flex: 0.75;
+    }
+
+    #nextRecordButton {
+        order: 2;
+        flex: 1.35;
+        font-weight: bold;
+    }
+
+    #nextTrackButton {
+        order: 3;
+        flex: 0.95;
+    }
+
+    .search-bar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 6px;
+    }
+
+    .search-bar label {
+        grid-column: 1 / -1;
+    }
+
+    .search-bar button {
+        width: auto;
+        min-width: 84px;
+    }
+
+    .search-grid {
+        gap: 6px;
+    }
+
+    .search-field label {
+        font-size: 0.66rem;
+    }
+
+    .search-field input,
+    input[type="text"] {
+        height: 40px;
+        padding: 8px;
+    }
+
+    .seed-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .seed-resume-wrap {
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    .seed-resume-wrap input {
+        max-width: 96px;
+    }
+
+    .seed-resume-wrap button {
+        width: auto;
+        min-width: 84px;
+    }
+
+    .loading-copy {
+        font-size: 0.72rem;
+    }
+}
+
+@media only screen and (max-width: 380px) {
+    #listingInfo {
+        max-height: calc(100vh - 335px);
+        font-size: 0.76rem;
+    }
+
+    .controls button::after {
+        font-size: 13px;
+    }
+}
+
 ```
 
 ## videoSelector.js
@@ -2433,4 +2655,5 @@ function updateStatus(message, isError = false) {
     status.textContent = message || '';
     status.classList.toggle('error', Boolean(isError));
 }
+
 ```

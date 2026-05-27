@@ -89,9 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchSummary     = document.getElementById('searchSummary');
     const summaryText       = document.getElementById('searchSummaryText');
     const editButton        = document.getElementById('searchEditButton');
+    const setupToggle       = document.getElementById('setupToggle');
 
     populateSearchSuggestions();
     installSwipeControls();
+    installSetupToggle(setupToggle);
 
     // ── Tab switching ────────────────────────────────────────────────────────
     function activateTab(mode) {
@@ -113,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name) {
             clearSession();
             loadStore(name);
+            enterDiggingMode();
         } else {
             updateStatus('Enter a store name first.', true);
         }
@@ -162,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearSession();
         loadSearch(params);
         collapseSearch(params);
+        enterDiggingMode();
     });
 
     ['sq', 'sGenre', 'sStyle', 'sYear', 'sYearFrom', 'sYearTo', 'sCountry'].forEach(id => {
@@ -177,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const session = loadSession();
         if (session && session.seed === key) {
             resumeLoadedSession(session, collapseSearch, activateTab);
+            enterDiggingMode();
         } else {
             const params = collectSearchParams();
             if (!Object.values(params).some(v => v)) {
@@ -185,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             loadSearch(params, key);
             collapseSearch(params);
+            enterDiggingMode();
         }
     });
 
@@ -192,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         seedInput.value = seedInput.value.toUpperCase().replace(/[^A-Z2-9]/g, '').slice(0, 4);
     });
     seedInput.addEventListener('keydown', e => { if (e.key === 'Enter') resumeButton.click(); });
-    seedDisplay.addEventListener('click', () => copyToClipboard(seedDisplay.textContent.trim(), 'Session key copied.'));
+    seedDisplay.addEventListener('click', () => copyToClipboard(seedDisplay.textContent.trim(), 'Session key'));
 
     // ── Playback controls ────────────────────────────────────────────────────
     nextRecordButton.addEventListener('click', () => nextRecord());
@@ -236,15 +242,18 @@ function showSavedSessionBanner(saved, collapseSearch, activateTab) {
     document.getElementById('resumeSavedButton')?.addEventListener('click', () => {
         info.innerHTML = '';
         resumeLoadedSession(saved, collapseSearch, activateTab);
+        enterDiggingMode();
     });
     document.getElementById('discardSavedButton')?.addEventListener('click', () => {
         clearSession();
         info.innerHTML = '';
         updateStatus('Saved session discarded.');
+        leaveDiggingMode();
     });
 }
 
 function resumeLoadedSession(session, collapseSearch, activateTab) {
+    enterDiggingMode();
     if (session.mode === 'store') {
         activateTab('store');
         const input = document.getElementById('resellerName');
@@ -254,6 +263,35 @@ function resumeLoadedSession(session, collapseSearch, activateTab) {
         activateTab('search');
         resumeSearch(session);
         collapseSearch(session.params || {});
+    }
+}
+
+function installSetupToggle(setupToggle) {
+    if (!setupToggle) return;
+    setupToggle.addEventListener('click', () => {
+        const open = !document.body.classList.contains('setup-open');
+        document.body.classList.toggle('setup-open', open);
+        setupToggle.setAttribute('aria-expanded', String(open));
+        setupToggle.textContent = open ? 'Hide setup' : 'Setup';
+    });
+}
+
+function enterDiggingMode() {
+    document.body.classList.add('is-digging');
+    document.body.classList.remove('setup-open');
+    const setupToggle = document.getElementById('setupToggle');
+    if (setupToggle) {
+        setupToggle.setAttribute('aria-expanded', 'false');
+        setupToggle.textContent = 'Setup';
+    }
+}
+
+function leaveDiggingMode() {
+    document.body.classList.remove('is-digging', 'setup-open');
+    const setupToggle = document.getElementById('setupToggle');
+    if (setupToggle) {
+        setupToggle.setAttribute('aria-expanded', 'false');
+        setupToggle.textContent = 'Setup';
     }
 }
 
@@ -295,9 +333,11 @@ function updateStatus(message, isError = false) {
     status.classList.toggle('error', Boolean(isError));
 }
 
-function copyToClipboard(value, successMessage) {
+function copyToClipboard(value, label) {
     if (!value || value === '----') return;
-    navigator.clipboard.writeText(value).then(() => updateStatus(successMessage || 'Copied.'));
+    navigator.clipboard.writeText(value).then(() => {
+        console.log(`${label || 'Value'} copied to clipboard:`, value);
+    }).catch(err => console.error('Clipboard copy failed:', err));
 }
 
 function escapeHtml(value) {
